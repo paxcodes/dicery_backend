@@ -1,0 +1,9 @@
+# Python `build` directory
+*.egg-info
+
+# VS Code settings
+.vscode
+
+# Python Caching
+__pycache__
+.pytest_cache
