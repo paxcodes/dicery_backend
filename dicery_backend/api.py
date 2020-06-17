@@ -1,6 +1,8 @@
 from fastapi import FastAPI, Form
 from fastapi.middleware.cors import CORSMiddleware
 
+from .utils import GenerateRoomCode
+
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"])
 
@@ -10,4 +12,6 @@ async def GetHome():
 
 @app.post("/rooms")
 async def create_rooms(room_owner: str = Form(...)):
-    return room_owner
+    room_code = GenerateRoomCode()
+    # TODO save room_code and room_owner in database
+    return room_code
