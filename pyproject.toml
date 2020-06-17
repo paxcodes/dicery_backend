@@ -10,6 +10,7 @@ fastapi = "^0.58.0"
 uvicorn = "^0.11.5"
 sse-starlette = "^0.3.4"
 python-multipart = "^0.0.5"
+sqlalchemy = "^1.3.17"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.4"
