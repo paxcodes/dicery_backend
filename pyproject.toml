@@ -17,6 +17,9 @@ black = {version = "^19.10b0", allow-prereleases = true}
 pylama = "^7.7.1"
 bandit = "^1.6.2"
 
+[tool.black]
+line-length = 80
+
 [build-system]
 requires = ["poetry>=1.0"]
 build-backend = "poetry.masonry.api"
