@@ -13,6 +13,9 @@ python-multipart = "^0.0.5"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.4"
+black = {version = "^19.10b0", allow-prereleases = true}
+pylama = "^7.7.1"
+bandit = "^1.6.2"
 
 [build-system]
 requires = ["poetry>=1.0"]
