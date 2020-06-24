@@ -10,3 +10,17 @@ services:
         volumes:
             - .:/app
         command: /start-reload.sh
+        depends_on:
+            - db
+
+    db:
+        image: postgres:12
+        volumes:
+            - app-db-data:/var/lib/postgresql/data/pgdata
+        env_file:
+            - .env
+        environment:
+            - PGDATA=/var/lib/postgresql/data/pgdata
+
+volumes: 
+    app-db-data:
