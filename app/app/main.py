@@ -6,11 +6,6 @@ from .database import engine, SessionLocal
 from .utils import GenerateRoomCode
 from . import models, crud, schemas
 
-# Create the database tables
-# TODO use Alembic instead of creating the database tables here?
-# See `alembic` directory of fullstack-fastapi-postgresql container
-models.Base.metadata.create_all(bind=engine)
-
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"])
 
