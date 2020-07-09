@@ -2,9 +2,9 @@ from fastapi import FastAPI, Form, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
-from .database import engine, SessionLocal
+from .database import SessionLocal
 from .utils import GenerateRoomCode
-from . import models, crud, schemas
+from . import crud, schemas
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"])
