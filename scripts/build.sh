@@ -3,7 +3,7 @@
 # Exit in case of error
 set -e
 
-TAG=${TAG?Variable not set} \
+TAG=${TAG?TAG variable not set} \
 docker-compose \
 -f docker-compose.yml \
 build

@@ -7,7 +7,7 @@ services:
             - "8090:8080"
         command:
             - --providers.docker
-            - --providers.docker.constraints=Label(`traefik.constraint-label-stack`, `${TRAEFIK_TAG?Variable not set}`)
+            - --providers.docker.constraints=Label(`traefik.constraint-label-stack`, `${TRAEFIK_TAG?TRAEFIK_TAG variable not set}`)
             - --providers.docker.exposedbydefault=false
             - --accesslog
             - --log
@@ -15,8 +15,8 @@ services:
             - --api.insecure=true
         labels:
             - traefik.enable=true
-            - traefik.http.routers.${STACK_NAME?Variable not set}-traefik-public-http.rule=Host(`${DOMAIN?Variable not set}`)
-            - traefik.http.services.${STACK_NAME?Variable not set}-traefik-public.loadbalancer.server.port=80
+            - traefik.http.routers.${STACK_NAME?STACK_NAME variable not set}-traefik-public-http.rule=Host(`${DOMAIN?DOMAIN variable not set}`)
+            - traefik.http.services.${STACK_NAME?STACK_NAME variable not set}-traefik-public.loadbalancer.server.port=80
     
     pgadmin:
         ports:
@@ -28,7 +28,7 @@ services:
         volumes:
             - ./app:/app
         environment: 
-            - SERVER_HOST=http://${DOMAIN?Variable not set}
+            - SERVER_HOST=http://${DOMAIN?DOMAIN variable not set}
         build: 
             context: .
             args:
@@ -36,9 +36,9 @@ services:
         command: /start-reload.sh
         labels:
             - traefik.enable=true
-            - traefik.constraint-label-stack=${TRAEFIK_TAG?Variable not set}
-            - traefik.http.routers.${STACK_NAME?Variable not set}-backend-http.rule=PathPrefix(`/`) || PathPrefix(`/api`) || PathPrefix(`/docs`) || PathPrefix(`/redoc`)
-            - traefik.http.services.${STACK_NAME?Variable not set}-backend.loadbalancer.server.port=80
+            - traefik.constraint-label-stack=${TRAEFIK_TAG?TRAEFIK_TAG variable not set}
+            - traefik.http.routers.${STACK_NAME?STACK_NAME variable not set}-backend-http.rule=PathPrefix(`/`)
+            - traefik.http.services.${STACK_NAME?STACK_NAME variable not set}-backend.loadbalancer.server.port=80
 
 networks:
     traefik-public:
