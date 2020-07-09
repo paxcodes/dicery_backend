@@ -85,6 +85,7 @@ services:
                 - traefik.http.routers.${STACK_NAME?STACK_NAME variable not set}-proxy-http.middlewares=${STACK_NAME?STACK_NAME variable not set}-www-redirect,${STACK_NAME?STACK_NAME variable not set}-https-redirect
     
     backend:
+        image: dicery-backend_backend:latest
         build: 
             context: .
             args:
