@@ -7,7 +7,11 @@ def get_room(db: Session, room_code: str):
 
 
 def get_available_room(db: Session, room_code: str):
-    raise NotImplementedError
+    return (
+        db.query(models.Room)
+        .filter(models.Room.code == room_code, models.Room.isAvailable)
+        .first()
+    )
 
 
 def create_room(db: Session, room: schemas.RoomCreate):

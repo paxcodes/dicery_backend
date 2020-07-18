@@ -34,3 +34,10 @@ def create_room(room_owner: str = Form(...), db: Session = Depends(get_db)):
 
     room = schemas.RoomCreate(code=room_code, owner=room_owner)
     return crud.create_room(db=db, room=room)
+
+
+@app.post("/lobby/{room_code}")
+async def enter_lobby(req: Request, room_code, db: Session = Depends(get_db)):
+    room = crud.get_available_room(db=db, room_code=room_code)
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
