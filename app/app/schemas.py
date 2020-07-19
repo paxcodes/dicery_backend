@@ -30,6 +30,16 @@ class RoomCreate(RoomBase):
     pass
 
 
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    player: str
+    room_code: str
+
+
 class Room(RoomBase):
     isAvailable: bool
 
