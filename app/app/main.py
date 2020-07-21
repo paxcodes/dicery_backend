@@ -1,16 +1,18 @@
 from datetime import timedelta
+from typing import Tuple
 
-from fastapi import FastAPI, Form, Depends, HTTPException, status
+from fastapi import Depends, FastAPI, Form, HTTPException, Response
+from fastapi import Security, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import OAuth2PasswordBearer
-from jose import jwt, JWTError
+from fastapi.security import APIKeyCookie
 from sqlalchemy.orm import Session
 
+from jose import JWTError, jwt
+
+from . import crud, schemas
 from .config import settings
 from .database import SessionLocal
-from .utils import GenerateRoomCode, CreateAccessToken
-from . import crud, schemas
-
+from .utils import CreateAccessToken, GenerateRoomCode
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 24 hours
 
