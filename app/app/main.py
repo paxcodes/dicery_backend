@@ -15,8 +15,8 @@ from .database import SessionLocal
 from .utils import CreateAccessToken, GenerateRoomCode
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 24 hours
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token", scheme_name="http")
+API_KEY_COOKIE_NAME = "key"
+api_key = APIKeyCookie(name=API_KEY_COOKIE_NAME)
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"])
@@ -49,7 +49,7 @@ def create_room(room_owner: str = Form(...), db: Session = Depends(get_db)):
 
 
 async def get_current_player_and_room(
-    token: str = Depends(oauth2_scheme), db=Depends(get_db)
+    token: str = Security(api_key), db=Depends(get_db)
 ):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -81,8 +81,9 @@ async def join_lobby(token: str = Depends(oauth2_scheme)):
     raise NotImplementedError
 
 
-@app.post("/token", response_model=schemas.Token)
+@app.post("/token", response_model=schemas.Room)
 async def validate_room_for_access_token(
+    response: Response,
     room_code: str = Form(...),
     player: str = Form(...),
     db: Session = Depends(get_db),
@@ -101,4 +102,8 @@ async def validate_room_for_access_token(
         data={"sub": player, "dicery_room": room_code},
         expires_delta=access_token_expires,
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+
+    response.set_cookie(
+        key="access_token", value=f"Bearer {access_token}", httponly=True
+    )
+    return room
