@@ -21,6 +21,7 @@ pytest = "^5.4"
 black = {version = "^19.10b0", allow-prereleases = true}
 pylama = "^7.7.1"
 bandit = "^1.6.2"
+debugpy = "^1.0.0-beta.12"
 
 [tool.black]
 line-length = 80
