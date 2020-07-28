@@ -104,6 +104,6 @@ async def validate_room_for_access_token(
     )
 
     response.set_cookie(
-        key="access_token", value=f"Bearer {access_token}", httponly=True
+        key=API_KEY_COOKIE_NAME, value=f"{access_token}", httponly=True
     )
     return room
