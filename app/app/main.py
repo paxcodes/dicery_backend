@@ -1,11 +1,14 @@
 from datetime import timedelta
 from typing import Tuple
+from queue import Queue, Empty
 
-from fastapi import Depends, FastAPI, Form, HTTPException, Response
+import asyncio
+from fastapi import Depends, FastAPI, Form, Request, HTTPException, Response
 from fastapi import Security, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import APIKeyCookie
 from sqlalchemy.orm import Session
+from sse_starlette.sse import EventSourceResponse
 
 from jose import JWTError, jwt
 
@@ -14,12 +17,16 @@ from .config import settings
 from .database import SessionLocal
 from .utils import CreateAccessToken, GenerateRoomCode
 
+
 ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 24 hours
 API_KEY_COOKIE_NAME = "key"
 api_key = APIKeyCookie(name=API_KEY_COOKIE_NAME)
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"])
+
+
+lobbyQueues = {}
 
 
 # Dependency
@@ -45,6 +52,9 @@ def create_room(room_owner: str = Form(...), db: Session = Depends(get_db)):
             break
 
     room = schemas.RoomCreate(code=room_code, owner=room_owner)
+    # TODO make sure the queue is removed / cleaned up if the room has
+    # been CLOSED
+    lobbyQueues[room_code] = {}
     return crud.create_room(db=db, room=room)
 
 
@@ -76,9 +86,28 @@ async def get_current_player_and_room(
 
 
 @app.get("/lobby/{room_code}")
-async def join_lobby(token: str = Depends(oauth2_scheme)):
-    # this will be an SSE connection
-    raise NotImplementedError
+async def join_lobby(
+    req: Request, playerAndRoom=Depends(get_current_player_and_room)
+):
+    player, room = playerAndRoom
+
+    # return {"player": player}
+    async def streamLobbyActivity():
+        # TODO get all players currently in the room
+        # yield players
+        while True:
+            disconnected = await req.is_disconnected()
+            if disconnected:
+                break
+            try:
+                playerLobbyQueue = lobbyQueues[room.code][player]
+                playerWhoJoined = playerLobbyQueue.get(block=False)
+            except Empty:
+                pass
+            else:
+                yield playerWhoJoined
+
+    return EventSourceResponse(streamLobbyActivity())
 
 
 @app.post("/token", response_model=schemas.Room)
@@ -95,8 +124,10 @@ async def validate_room_for_access_token(
         )
 
     # TODO if player `already exists`, concatenate with `_[NUMBER]`
+    # player = f"{player}_{number}"
     # TODO add player to the database so we can confirm later that the player
     # can submit/subscribe.
+    # TODO ^^^ Also we need a list of players *already* in the room.
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = CreateAccessToken(
         data={"sub": player, "dicery_room": room_code},
@@ -106,4 +137,10 @@ async def validate_room_for_access_token(
     response.set_cookie(
         key=API_KEY_COOKIE_NAME, value=f"{access_token}", httponly=True
     )
+
+    if room_code not in lobbyQueues:
+        lobbyQueues[room_code] = {}
+    lobbyQueues[room_code][player] = Queue()
+    for playername in lobbyQueues[room_code]:
+        lobbyQueues[room_code][playername].put(player)
     return room
