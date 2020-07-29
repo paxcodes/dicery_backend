@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from datetime import timedelta
 from typing import Tuple
 from queue import Queue, Empty
@@ -54,7 +55,7 @@ def create_room(room_owner: str = Form(...), db: Session = Depends(get_db)):
     room = schemas.RoomCreate(code=room_code, owner=room_owner)
     # TODO make sure the queue is removed / cleaned up if the room has
     # been CLOSED
-    lobbyQueues[room_code] = {}
+    lobbyQueues[room_code] = OrderedDict()
     return crud.create_room(db=db, room=room)
 
 
@@ -93,6 +94,7 @@ async def join_lobby(
 
     # return {"player": player}
     async def streamLobbyActivity():
+        yield ",".join(lobbyQueues[room.code].keys())
         # TODO get all players currently in the room
         # yield players
         while True:
@@ -139,8 +141,8 @@ async def validate_room_for_access_token(
     )
 
     if room_code not in lobbyQueues:
-        lobbyQueues[room_code] = {}
-    lobbyQueues[room_code][player] = Queue()
+        lobbyQueues[room_code] = OrderedDict()
     for playername in lobbyQueues[room_code]:
         lobbyQueues[room_code][playername].put(player)
+    lobbyQueues[room_code][player] = Queue()
     return room
