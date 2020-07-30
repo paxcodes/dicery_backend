@@ -45,7 +45,11 @@ async def get_home():
 
 
 @app.post("/rooms", response_model=schemas.Room)
-def create_room(room_owner: str = Form(...), db: Session = Depends(get_db)):
+def create_room(
+    response: Response,
+    room_owner: str = Form(...),
+    db: Session = Depends(get_db),
+):
     while True:
         room_code = GenerateRoomCode()
         room = crud.get_room(db, room_code)
@@ -56,6 +60,17 @@ def create_room(room_owner: str = Form(...), db: Session = Depends(get_db)):
     # TODO make sure the queue is removed / cleaned up if the room has
     # been CLOSED
     lobbyQueues[room_code] = OrderedDict()
+    lobbyQueues[room_code][room_owner] = Queue()
+
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = CreateAccessToken(
+        data={"sub": room_owner, "dicery_room": room_code},
+        expires_delta=access_token_expires,
+    )
+    response.set_cookie(
+        key=API_KEY_COOKIE_NAME, value=f"{access_token}", httponly=True
+    )
+
     return crud.create_room(db=db, room=room)
 
 
