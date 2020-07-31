@@ -76,7 +76,7 @@ async def get_home():
 
 
 @app.put("/rooms/{room_code}/status/0")
-async def closeRoom(
+async def closeRoomLobby(
     room_code: str, playerAndRoom=Depends(get_current_player_and_room)
 ):
     currentPlayer, room = playerAndRoom
