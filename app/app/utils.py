@@ -27,3 +27,17 @@ def CreateAccessToken(data: dict, expires_delta: Optional[timedelta] = None):
         to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM
     )
     return encoded_jwt
+
+
+def CleanDiceRolls(diceRolls: str):
+    """Makes sure that the diceRolls are of a proper format.
+
+    Since we use `int()` to check whether the value is appropriate,
+    rolls such as 6.0 or 6.3 will be considered valid and
+    will be returned as 6.
+
+    ^^^ Make a test to document this expectation.
+    """
+    diceRollsList = diceRolls.split(",")
+    diceRollsList = [str(int(diceRoll)) for diceRoll in diceRollsList]
+    return ",".join(diceRollsList)
