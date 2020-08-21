@@ -6,7 +6,7 @@ from .database import Base
 
 
 class RoomPlayer(Base):
-    __table_name__ = "room_players"
+    __tablename__ = "room_players"
 
     room_code = Column(String, ForeignKey("rooms.code"), primary_key=True)
     player = Column(String, primary_key=True)
