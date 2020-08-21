@@ -4,6 +4,7 @@ from typing import Tuple
 from queue import Queue, Empty
 
 import asyncio
+from broadcaster import Broadcast
 from fastapi import Depends, FastAPI, Form, Request, HTTPException, Response
 from fastapi import Security, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -27,11 +28,13 @@ CLOSE_ROOM_COMMAND = "***CLOSE_ROOM***"
 
 api_key = APIKeyCookie(name=API_KEY_COOKIE_NAME)
 
-app = FastAPI()
+broadcast = Broadcast(settings.SQLALCHEMY_DATABASE_URI)
+app = FastAPI(
+    on_startup=[broadcast.connect], on_shutdown=[broadcast.disconnect]
+)
 app.add_middleware(CORSMiddleware, allow_origins=["*"])
 
 
-lobbyQueues = {}
 roomQueues = {}
 
 
@@ -97,8 +100,8 @@ async def submitDiceRoll(
         )
 
     timestamp = str(datetime.now())
-    for playername in lobbyQueues[room_code]:
-        lobbyQueues[room_code][playername].put(
+    for playername in roomQueues[room_code]:
+        roomQueues[room_code][playername].put(
             f"{player}|{diceRolls}|{timestamp}"
         )
 
@@ -136,25 +139,30 @@ async def enterRoom(
 
 @app.put("/rooms/{room_code}/status/0")
 async def closeRoomLobby(
-    room_code: str, playerAndRoom=Depends(get_current_player_and_room)
+    room_code: str,
+    playerAndRoom=Depends(get_current_player_and_room),
+    db: Session = Depends(get_db),
 ):
-    currentPlayer, room = playerAndRoom
-    if room_code not in lobbyQueues:
+    # Check that the room_code is actually in the "lobby" / available
+    availableRoom = crud.get_available_room(db, room_code)
+    if availableRoom is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Room does not exist or already closed.",
         )
 
+    currentPlayer, room = playerAndRoom
     if room_code != room.code or currentPlayer != room.owner:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized"
         )
 
-    # Add room queues and remove lobby queues
-    roomQueues[room_code] = {}
-    for aPlayer in lobbyQueues[room_code]:
-        roomQueues[room_code][aPlayer] = Queue()
-        lobbyQueues[room_code][aPlayer].put(CLOSE_ROOM_COMMAND)
+    # TODO Close the room (set room as unavailable)
+    # # Add room queues and remove lobby queues
+    # roomQueues[room_code] = {}
+    # for aPlayer in lobbyQueues[room_code]:
+    #     roomQueues[room_code][aPlayer] = Queue()
+    #     lobbyQueues[room_code][aPlayer].put(CLOSE_ROOM_COMMAND)
 
 
 @app.post("/rooms", response_model=schemas.Room)
@@ -176,10 +184,8 @@ def create_room(
     # should return a 400.
 
     room = schemas.RoomCreate(code=room_code, owner=room_owner)
-    # TODO make sure the queue is removed / cleaned up if the room has
-    # been CLOSED
-    lobbyQueues[room_code] = OrderedDict()
-    lobbyQueues[room_code][room_owner] = Queue()
+    # TODO Add player to the room
+    # schemas.PlayerCreate(roomCode=room_code, player=room_owner)
 
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = CreateAccessToken(
@@ -203,32 +209,18 @@ async def join_lobby(
     # return {"player": player}
 
     async def streamLobbyActivity():
-        yield ",".join(lobbyQueues[room.code].keys())
+        # TODO Get players in the room.
+        players = []
+        yield ",".join(players)
         # TODO get all players currently in the room
         # yield players
         while True:
             disconnected = await req.is_disconnected()
             if disconnected:
                 break
-            try:
-                playerLobbyQueue = lobbyQueues[room.code][player]
-
-                # TODO we know that `break`ing from the loop
-                # will cause the stream to end. (TODO verify in the
-                # app) -- when owner closes the room, break ittt.
-                queueEntry = playerLobbyQueue.get(block=False)
-                if queueEntry == CLOSE_ROOM_COMMAND:
-                    del lobbyQueues[room.code][player]
-                    if len(lobbyQueues[room.code]) == 0:
-                        del lobbyQueues[room.code]
-                    yield CLOSE_ROOM_COMMAND
-                    break
-                else:
-                    playerWhoJoined = queueEntry
-            except Empty:
-                pass
-            else:
-                yield playerWhoJoined
+            async with broadcast.subscribe(channel=room.code) as subscriber:
+                async for event in subscriber:
+                    yield event.message
 
     return EventSourceResponse(streamLobbyActivity())
 
@@ -266,9 +258,6 @@ async def validate_room_for_access_token(
         key=API_KEY_COOKIE_NAME, value=f"{access_token}", httponly=True
     )
 
-    if room_code not in lobbyQueues:
-        lobbyQueues[room_code] = OrderedDict()
-    for playername in lobbyQueues[room_code]:
-        lobbyQueues[room_code][playername].put(player)
-    lobbyQueues[room_code][player] = Queue()
+    await broadcast.publish(channel=room_code, message=player)
+    # TODO Add player to the list of players in a room.
     return room
