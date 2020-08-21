@@ -5,6 +5,15 @@ from sqlalchemy.orm import relationship
 from .database import Base
 
 
+class RoomPlayer(Base):
+    __table_name__ = "room_players"
+
+    room_code = Column(String, ForeignKey("rooms.code"), primary_key=True)
+    player = Column(String, primary_key=True)
+
+    room = relationship("Room", back_populates="players")
+
+
 class RoomLog(Base):
     __tablename__ = "room_logs"
 
@@ -25,4 +34,8 @@ class Room(Base):
 
     logs = relationship(
         "RoomLog", order_by=RoomLog.created_time, back_populates="room"
+    )
+
+    players = relationship(
+        "RoomPlayer", order_by=RoomPlayer.player, back_populates="room"
     )
