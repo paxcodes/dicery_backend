@@ -118,17 +118,12 @@ async def enterRoom(
         while True:
             disconnected = await req.is_disconnected()
             if disconnected:
-                del roomQueues[room.code][player]
-                if len(roomQueues[room.code]) == 0:
-                    del roomQueues[room.code]
+                # TODO Remove player from the room
+                # TODO If the room no longer has players, remove room
                 break
-            playerRoomQueue = roomQueues[room.code][player]
-            try:
-                diceRollEntry = playerRoomQueue.get(block=False)
-            except Empty:
-                pass
-            else:
-                yield diceRollEntry
+            async with broadcast.subscribe(channel=room.code) as subscriber:
+                async for event in subscriber:
+                    yield event.message
 
     return EventSourceResponse(streamRoomActivity())
 
@@ -213,6 +208,9 @@ async def join_lobby(
         while True:
             disconnected = await req.is_disconnected()
             if disconnected:
+                # TODO remove player from the room? What if they're exiting
+                # the lobby, to ENTER the room?
+                # TODO have a lobby_players table?
                 break
             async with broadcast.subscribe(channel=room.code) as subscriber:
                 async for event in subscriber:
