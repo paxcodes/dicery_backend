@@ -1,3 +1,5 @@
+from typing import List, Tuple
+
 from sqlalchemy.orm import Session
 from . import models, schemas
 
@@ -26,3 +28,18 @@ def create_room(db: Session, room: schemas.RoomCreate):
     # to refresh
     db.refresh(room)
     return room
+
+
+def add_room_player(db: Session, room_player: schemas.RoomPlayer):
+    room_player = models.RoomPlayer(
+        room_code=room_player.room_code, player=room_player.player
+    )
+    db.add(room_player)
+    db.commit()
+
+
+def get_room_players(db: Session, room_code: str) -> List[str]:
+    queryResult: List[Tuple[str]] = db.query(models.RoomPlayer.player).filter(
+        models.RoomPlayer.room_code == room_code
+    ).all()
+    return [row[0] for row in queryResult]
