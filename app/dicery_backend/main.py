@@ -174,9 +174,14 @@ def create_room(
     # ^^^ Make a TEST out of this: When API receives non-alphanumeric, API
     # should return a 400.
 
-    room = schemas.RoomCreate(code=room_code, owner=room_owner)
-    # TODO Add player to the room
-    # schemas.PlayerCreate(roomCode=room_code, player=room_owner)
+    roomSchema = schemas.RoomCreate(code=room_code, owner=room_owner)
+    room = crud.create_room(db=db, room=roomSchema)
+    roomPlayerSchema = schemas.RoomPlayer(
+        room_code=room.code, player=room.owner
+    )
+    crud.add_room_player(
+        db, room_player=roomPlayerSchema,
+    )
 
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = CreateAccessToken(
@@ -187,24 +192,25 @@ def create_room(
         key=API_KEY_COOKIE_NAME, value=f"{access_token}", httponly=True
     )
 
-    return crud.create_room(db=db, room=room)
+    return room
 
 
 @app.get("/lobby/{room_code}")
 async def join_lobby(
-    req: Request, playerAndRoom=Depends(get_current_player_and_room)
+    room_code: str,
+    req: Request,
+    playerAndRoom=Depends(get_current_player_and_room),
+    db: Session = Depends(get_db),
 ):
     player, room = playerAndRoom
-    # TODO validate whether player can join this lobby
-    # TODO verify room.code == room_code
-    # return {"player": player}
+    if room.code != room_code:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized"
+        )
 
     async def streamLobbyActivity():
-        # TODO Get players in the room.
-        players = []
+        players = crud.get_room_players(db, room.code)
         yield ",".join(players)
-        # TODO get all players currently in the room
-        # yield players
         while True:
             disconnected = await req.is_disconnected()
             if disconnected:
@@ -252,6 +258,8 @@ async def validate_room_for_access_token(
         key=API_KEY_COOKIE_NAME, value=f"{access_token}", httponly=True
     )
 
+    room_player_schema = schemas.RoomPlayer(room_code=room_code, player=player)
+    crud.add_room_player(db, room_player=room_player_schema)
     await broadcast.publish(channel=room_code, message=player)
-    # TODO Add player to the list of players in a room.
+
     return room
