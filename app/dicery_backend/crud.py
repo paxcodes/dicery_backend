@@ -16,6 +16,13 @@ def get_available_room(db: Session, room_code: str):
     )
 
 
+def close_room(db: Session, room_code: str):
+    db.query(models.Room).filter(models.Room.code == room_code).update(
+        {"isAvailable": False}
+    )
+    db.commit()
+
+
 def create_room(db: Session, room: schemas.RoomCreate):
     # TODO move room code generation here instead of
     # it being in the RoomCreate schema?
@@ -28,6 +35,11 @@ def create_room(db: Session, room: schemas.RoomCreate):
     # to refresh
     db.refresh(room)
     return room
+
+
+def delete_room(db: Session, room_code: str):
+    db.query(models.Room).filter(models.Room.code == room_code).delete()
+    db.commit()
 
 
 def add_room_player(db: Session, room_player: schemas.RoomPlayer):

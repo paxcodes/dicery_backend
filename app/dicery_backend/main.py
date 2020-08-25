@@ -148,7 +148,7 @@ async def closeRoomLobby(
             detail="Room does not exist or already closed.",
         )
 
-    # TODO Close the room (set room as unavailable)
+    crud.close_room(db, room_code=room_code)
     # # Add room queues and remove lobby queues
     # roomQueues[room_code] = {}
     # for aPlayer in lobbyQueues[room_code]:
