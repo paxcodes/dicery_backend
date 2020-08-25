@@ -134,18 +134,18 @@ async def closeRoomLobby(
     playerAndRoom=Depends(get_current_player_and_room),
     db: Session = Depends(get_db),
 ):
+    currentPlayer, room = playerAndRoom
+    if room_code != room.code or currentPlayer != room.owner:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized"
+        )
+
     # Check that the room_code is actually in the "lobby" / available
     availableRoom = crud.get_available_room(db, room_code)
     if availableRoom is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Room does not exist or already closed.",
-        )
-
-    currentPlayer, room = playerAndRoom
-    if room_code != room.code or currentPlayer != room.owner:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized"
         )
 
     # TODO Close the room (set room as unavailable)
@@ -263,3 +263,9 @@ async def validate_room_for_access_token(
     await broadcast.publish(channel=room_code, message=player)
 
     return room
+
+
+# import debugpy #noqa
+
+# debugpy.listen(("0.0.0.0", 5678))
+# debugpy.wait_for_client()
