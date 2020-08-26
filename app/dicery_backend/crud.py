@@ -1,3 +1,5 @@
+from typing import List, Tuple
+
 from sqlalchemy.orm import Session
 from . import models, schemas
 
@@ -14,6 +16,13 @@ def get_available_room(db: Session, room_code: str):
     )
 
 
+def close_room(db: Session, room_code: str):
+    db.query(models.Room).filter(models.Room.code == room_code).update(
+        {"isAvailable": False}
+    )
+    db.commit()
+
+
 def create_room(db: Session, room: schemas.RoomCreate):
     # TODO move room code generation here instead of
     # it being in the RoomCreate schema?
@@ -26,3 +35,23 @@ def create_room(db: Session, room: schemas.RoomCreate):
     # to refresh
     db.refresh(room)
     return room
+
+
+def delete_room(db: Session, room_code: str):
+    db.query(models.Room).filter(models.Room.code == room_code).delete()
+    db.commit()
+
+
+def add_room_player(db: Session, room_player: schemas.RoomPlayer):
+    room_player = models.RoomPlayer(
+        room_code=room_player.room_code, player=room_player.player
+    )
+    db.add(room_player)
+    db.commit()
+
+
+def get_room_players(db: Session, room_code: str) -> List[str]:
+    queryResult: List[Tuple[str]] = db.query(models.RoomPlayer.player).filter(
+        models.RoomPlayer.room_code == room_code
+    ).all()
+    return [row[0] for row in queryResult]

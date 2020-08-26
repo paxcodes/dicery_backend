@@ -76,7 +76,7 @@ async def get_home():
 
 
 @app.post("/rolls/{room_code}")
-async def submitDiceRoll(
+async def submit_dice_roll(
     room_code: str,
     diceRolls: str = Form(...),
     playerAndRoom=Depends(get_current_player_and_room),
@@ -96,14 +96,12 @@ async def submitDiceRoll(
         )
 
     timestamp = str(datetime.now())
-    for playername in roomQueues[room_code]:
-        roomQueues[room_code][playername].put(
-            f"{player}|{diceRolls}|{timestamp}"
-        )
+    data = f"{player}|{diceRolls}|{timestamp}"
+    broadcast.publish(channel=room_code, message=data)
 
 
 @app.get("/rooms/{room_code}")
-async def enterRoom(
+async def enter_room(
     room_code: str,
     req: Request,
     playerAndRoom=Depends(get_current_player_and_room),
@@ -118,27 +116,28 @@ async def enterRoom(
         while True:
             disconnected = await req.is_disconnected()
             if disconnected:
-                del roomQueues[room.code][player]
-                if len(roomQueues[room.code]) == 0:
-                    del roomQueues[room.code]
+                # TODO Remove player from the room
+                # TODO If the room no longer has players, remove room
                 break
-            playerRoomQueue = roomQueues[room.code][player]
-            try:
-                diceRollEntry = playerRoomQueue.get(block=False)
-            except Empty:
-                pass
-            else:
-                yield diceRollEntry
+            async with broadcast.subscribe(channel=room.code) as subscriber:
+                async for event in subscriber:
+                    yield event.message
 
     return EventSourceResponse(streamRoomActivity())
 
 
 @app.put("/rooms/{room_code}/status/0")
-async def closeRoomLobby(
+async def close_room_lobby(
     room_code: str,
     playerAndRoom=Depends(get_current_player_and_room),
     db: Session = Depends(get_db),
 ):
+    currentPlayer, room = playerAndRoom
+    if room_code != room.code or currentPlayer != room.owner:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized"
+        )
+
     # Check that the room_code is actually in the "lobby" / available
     availableRoom = crud.get_available_room(db, room_code)
     if availableRoom is None:
@@ -147,18 +146,8 @@ async def closeRoomLobby(
             detail="Room does not exist or already closed.",
         )
 
-    currentPlayer, room = playerAndRoom
-    if room_code != room.code or currentPlayer != room.owner:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized"
-        )
-
-    # TODO Close the room (set room as unavailable)
-    # # Add room queues and remove lobby queues
-    # roomQueues[room_code] = {}
-    # for aPlayer in lobbyQueues[room_code]:
-    #     roomQueues[room_code][aPlayer] = Queue()
-    #     lobbyQueues[room_code][aPlayer].put(CLOSE_ROOM_COMMAND)
+    crud.close_room(db, room_code=room_code)
+    await broadcast.publish(channel=room_code, message=CLOSE_ROOM_COMMAND)
 
 
 @app.post("/rooms", response_model=schemas.Room)
@@ -179,9 +168,14 @@ def create_room(
     # ^^^ Make a TEST out of this: When API receives non-alphanumeric, API
     # should return a 400.
 
-    room = schemas.RoomCreate(code=room_code, owner=room_owner)
-    # TODO Add player to the room
-    # schemas.PlayerCreate(roomCode=room_code, player=room_owner)
+    roomSchema = schemas.RoomCreate(code=room_code, owner=room_owner)
+    room = crud.create_room(db=db, room=roomSchema)
+    roomPlayerSchema = schemas.RoomPlayer(
+        room_code=room.code, player=room.owner
+    )
+    crud.add_room_player(
+        db, room_player=roomPlayerSchema,
+    )
 
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = CreateAccessToken(
@@ -192,27 +186,31 @@ def create_room(
         key=API_KEY_COOKIE_NAME, value=f"{access_token}", httponly=True
     )
 
-    return crud.create_room(db=db, room=room)
+    return room
 
 
 @app.get("/lobby/{room_code}")
 async def join_lobby(
-    req: Request, playerAndRoom=Depends(get_current_player_and_room)
+    room_code: str,
+    req: Request,
+    playerAndRoom=Depends(get_current_player_and_room),
+    db: Session = Depends(get_db),
 ):
     player, room = playerAndRoom
-    # TODO validate whether player can join this lobby
-    # TODO verify room.code == room_code
-    # return {"player": player}
+    if room.code != room_code:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized"
+        )
 
     async def streamLobbyActivity():
-        # TODO Get players in the room.
-        players = []
+        players = crud.get_room_players(db, room.code)
         yield ",".join(players)
-        # TODO get all players currently in the room
-        # yield players
         while True:
             disconnected = await req.is_disconnected()
             if disconnected:
+                # TODO remove player from the room? What if they're exiting
+                # the lobby, to ENTER the room?
+                # TODO have a lobby_players table?
                 break
             async with broadcast.subscribe(channel=room.code) as subscriber:
                 async for event in subscriber:
@@ -254,6 +252,14 @@ async def validate_room_for_access_token(
         key=API_KEY_COOKIE_NAME, value=f"{access_token}", httponly=True
     )
 
+    room_player_schema = schemas.RoomPlayer(room_code=room_code, player=player)
+    crud.add_room_player(db, room_player=room_player_schema)
     await broadcast.publish(channel=room_code, message=player)
-    # TODO Add player to the list of players in a room.
+
     return room
+
+
+# import debugpy #noqa
+
+# debugpy.listen(("0.0.0.0", 5678))
+# debugpy.wait_for_client()

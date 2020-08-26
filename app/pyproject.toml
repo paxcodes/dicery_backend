@@ -16,6 +16,8 @@ async-generator = "^1.10"
 psycopg2-binary = "^2.8.5"
 python-jose = {version = "^3.1.0", extras = ["cryptography"]}
 broadcaster = {version = "0.2.0", extras = ["postgres"]}
+alembic = "^1.4.2"
+tenacity = "^6.2.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.4"
