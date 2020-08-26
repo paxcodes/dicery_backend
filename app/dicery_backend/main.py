@@ -76,7 +76,7 @@ async def get_home():
 
 
 @app.post("/rolls/{room_code}")
-async def submitDiceRoll(
+async def submit_dice_roll(
     room_code: str,
     diceRolls: str = Form(...),
     playerAndRoom=Depends(get_current_player_and_room),
@@ -101,7 +101,7 @@ async def submitDiceRoll(
 
 
 @app.get("/rooms/{room_code}")
-async def enterRoom(
+async def enter_room(
     room_code: str,
     req: Request,
     playerAndRoom=Depends(get_current_player_and_room),
@@ -127,7 +127,7 @@ async def enterRoom(
 
 
 @app.put("/rooms/{room_code}/status/0")
-async def closeRoomLobby(
+async def close_room_lobby(
     room_code: str,
     playerAndRoom=Depends(get_current_player_and_room),
     db: Session = Depends(get_db),
