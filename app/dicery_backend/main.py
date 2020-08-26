@@ -96,10 +96,8 @@ async def submitDiceRoll(
         )
 
     timestamp = str(datetime.now())
-    for playername in roomQueues[room_code]:
-        roomQueues[room_code][playername].put(
-            f"{player}|{diceRolls}|{timestamp}"
-        )
+    data = f"{player}|{diceRolls}|{timestamp}"
+    broadcast.publish(channel=room_code, message=data)
 
 
 @app.get("/rooms/{room_code}")
