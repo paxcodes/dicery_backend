@@ -97,7 +97,7 @@ async def submit_dice_roll(
 
     timestamp = str(datetime.now())
     data = f"{player}|{diceRolls}|{timestamp}"
-    broadcast.publish(channel=room_code, message=data)
+    await broadcast.publish(channel=room_code, message=data)
 
 
 @app.get("/rooms/{room_code}")
