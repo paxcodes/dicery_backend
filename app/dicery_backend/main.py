@@ -149,11 +149,7 @@ async def closeRoomLobby(
         )
 
     crud.close_room(db, room_code=room_code)
-    # # Add room queues and remove lobby queues
-    # roomQueues[room_code] = {}
-    # for aPlayer in lobbyQueues[room_code]:
-    #     roomQueues[room_code][aPlayer] = Queue()
-    #     lobbyQueues[room_code][aPlayer].put(CLOSE_ROOM_COMMAND)
+    await broadcast.publish(channel=room_code, message=CLOSE_ROOM_COMMAND)
 
 
 @app.post("/rooms", response_model=schemas.Room)
