@@ -45,3 +45,11 @@ class Room(RoomBase):
 
     class Config:
         orm_mode = True
+
+
+class RoomPlayer(BaseModel):
+    room_code: str
+    player: str
+
+    class Config:
+        orm_mode = True

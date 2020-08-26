@@ -49,6 +49,7 @@ services:
         env_file: 
             - .env
         environment: 
+            - MODULE_NAME=dicery_backend.main
             - SERVER_NAME=${DOMAIN?DOMAIN variable not set}
             - SERVER_HOST=https://${DOMAIN?DOMAIN variable not set}
         deploy:
