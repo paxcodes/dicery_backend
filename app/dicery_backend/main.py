@@ -214,7 +214,10 @@ async def join_lobby(
                 break
             async with broadcast.subscribe(channel=room.code) as subscriber:
                 async for event in subscriber:
-                    yield event.message
+                    msg = event.message
+                    if msg == CLOSE_ROOM_COMMAND:
+                        return
+                    yield msg
 
     return EventSourceResponse(streamLobbyActivity())
 
