@@ -181,7 +181,7 @@ def create_room(
     # should return a 400.
 
     roomSchema = schemas.RoomCreate(code=room_code, owner=room_owner)
-    room = crud.create_room(db=db, room=roomSchema)
+    room = crud.create_room(db=db, roomSchema=roomSchema)
     roomPlayerSchema = schemas.RoomPlayer(
         room_code=room.code, player=room.owner
     )

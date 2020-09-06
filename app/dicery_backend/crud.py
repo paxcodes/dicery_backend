@@ -23,10 +23,10 @@ def close_room(db: Session, room_code: str):
     db.commit()
 
 
-def create_room(db: Session, room: schemas.RoomCreate):
+def create_room(db: Session, roomSchema: schemas.RoomCreate) -> models.Room:
     # TODO move room code generation here instead of
     # it being in the RoomCreate schema?
-    room = models.Room(code=room.code, owner=room.owner)
+    room = models.Room(code=roomSchema.code, owner=roomSchema.owner)
     db.add(room)
     db.commit()
     # TODO do we really need to refresh? Check whether room

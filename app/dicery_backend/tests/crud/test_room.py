@@ -10,7 +10,7 @@ class Test_Room_BREAD:
     def givenRoom(self, db: Session):
         givenRoomCode = "ABCDE3"
         roomSchema = schemas.RoomCreate(code=givenRoomCode, owner="Pax")
-        yield crud.create_room(db, room=roomSchema)
+        yield crud.create_room(db, roomSchema=roomSchema)
         crud.delete_room(db, room_code=givenRoomCode)
 
     def test_it_can_close_the_room(self, db: Session, givenRoom):

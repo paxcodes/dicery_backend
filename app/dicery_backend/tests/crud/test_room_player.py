@@ -9,7 +9,7 @@ class Test_RoomPlayer_CRUD:
         # Given
         room_code, player = "ABCDEF", "Pax"
         room = RoomCreate(code=room_code, owner=player)
-        crud.create_room(db, room=room)
+        crud.create_room(db, roomSchema=room)
         room_player = RoomPlayer(room_code=room.code, player=player)
         crud.add_room_player(db, room_player=room_player)
         # When
