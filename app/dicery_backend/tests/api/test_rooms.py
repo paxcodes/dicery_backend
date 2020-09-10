@@ -29,3 +29,9 @@ class Test_when_room_is_unavailable:
         )
         assert response.status_code == 404
         assert response.json() == {"detail": "Room not found"}
+
+
+class Test_when_unauthorized_player_attempts_to_enter_room:
+    @mark.skip(reason="Test not yet implemented")
+    def test_api_responds_with_403_FORBIDDEN(self):
+        pass
