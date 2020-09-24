@@ -67,6 +67,18 @@ services:
             - .env
         environment:
             - PGDATA=/var/lib/postgresql/data/pgdata
+        command:
+            - postgres
+            # the following lines tell pg server to adjust the TCP keepalive settings explicitly
+            # instead of reading from the container default, which is likely idle=7200 (seconds).
+            # The default value in the container is usually much larger than docker-swarm's IPVS default,
+            # which is 900. (And this is the culprit of the connection will be closed after ~15mins)
+            - -c
+            - 'tcp_keepalives_idle=600'
+            - -c
+            - 'tcp_keepalives_interval=30'
+            - -c
+            - 'tcp_keepalives_count=10'
         deploy:
             placement:
                 constraints:
