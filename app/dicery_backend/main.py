@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from broadcaster import Broadcast
 from fastapi import Depends, FastAPI, Form, Request, HTTPException, Response
@@ -95,7 +95,7 @@ async def submit_dice_roll(
             detail="The dice rolls are in a bad format.",
         )
 
-    timestamp = str(datetime.now())
+    timestamp = str(datetime.now(timezone.utc))
     data = f"{player}|{diceRolls}|{timestamp}"
     await broadcast.publish(channel=room_code, message=data)
 
@@ -260,9 +260,3 @@ async def validate_room_for_access_token(
     await broadcast.publish(channel=room_code, message=player)
 
     return room
-
-
-# import debugpy #noqa
-
-# debugpy.listen(("0.0.0.0", 5678))
-# debugpy.wait_for_client()
