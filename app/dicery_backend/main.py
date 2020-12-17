@@ -26,9 +26,13 @@ api_key = APIKeyCookie(name=API_KEY_COOKIE_NAME)
 
 broadcast = Broadcast(settings.SQLALCHEMY_DATABASE_URI)
 app = FastAPI(
-    on_startup=[broadcast.connect], on_shutdown=[broadcast.disconnect]
+    on_startup=[broadcast.connect], on_shutdown=[broadcast.disconnect],
 )
-app.add_middleware(CORSMiddleware, allow_origins=["*"])
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:8080"],
+    allow_credentials=True,
+)
 
 
 roomQueues = {}
