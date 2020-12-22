@@ -1,20 +1,27 @@
+import json
 from datetime import datetime, timedelta, timezone
 
 from broadcaster import Broadcast
-from fastapi import Depends, FastAPI, Form, Request, HTTPException, Response
-from fastapi import Security, status
+from fastapi import (
+    Depends,
+    FastAPI,
+    Form,
+    HTTPException,
+    Request,
+    Response,
+    Security,
+    status,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import APIKeyCookie
+from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 from sse_starlette.sse import EventSourceResponse
-
-from jose import JWTError, jwt
 
 from . import crud, schemas
 from .config import settings
 from .database import SessionLocal
 from .utils import CleanDiceRolls, CreateAccessToken, GenerateRoomCode
-
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 24 hours
 API_KEY_COOKIE_NAME = "key"
