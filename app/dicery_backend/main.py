@@ -133,7 +133,7 @@ async def enter_room(
                 break
             async with broadcast.subscribe(channel=room.code) as subscriber:
                 async for event in subscriber:
-                    yield event.message
+                    yield json.dumps(event.message)
 
     return EventSourceResponse(streamRoomActivity())
 
@@ -216,7 +216,7 @@ async def join_lobby(
 
     async def streamLobbyActivity():
         players = crud.get_room_players(db, room.code)
-        yield ",".join(players)
+        yield json.dumps(",".join(players))
         while True:
             disconnected = await req.is_disconnected()
             if disconnected:
@@ -229,7 +229,7 @@ async def join_lobby(
                     msg = event.message
                     if msg == CLOSE_ROOM_COMMAND:
                         return
-                    yield msg
+                    yield json.dumps(msg)
 
     return EventSourceResponse(streamLobbyActivity())
 
