@@ -1,20 +1,27 @@
+import json
 from datetime import datetime, timedelta, timezone
 
 from broadcaster import Broadcast
-from fastapi import Depends, FastAPI, Form, Request, HTTPException, Response
-from fastapi import Security, status
+from fastapi import (
+    Depends,
+    FastAPI,
+    Form,
+    HTTPException,
+    Request,
+    Response,
+    Security,
+    status,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import APIKeyCookie
+from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 from sse_starlette.sse import EventSourceResponse
-
-from jose import JWTError, jwt
 
 from . import crud, schemas
 from .config import settings
 from .database import SessionLocal
 from .utils import CleanDiceRolls, CreateAccessToken, GenerateRoomCode
-
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 24 hours
 API_KEY_COOKIE_NAME = "key"
@@ -26,9 +33,14 @@ api_key = APIKeyCookie(name=API_KEY_COOKIE_NAME)
 
 broadcast = Broadcast(settings.SQLALCHEMY_DATABASE_URI)
 app = FastAPI(
-    on_startup=[broadcast.connect], on_shutdown=[broadcast.disconnect]
+    on_startup=[broadcast.connect], on_shutdown=[broadcast.disconnect],
 )
-app.add_middleware(CORSMiddleware, allow_origins=["*"])
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:8080"],
+    allow_credentials=True,
+    allow_methods=["GET", "PUT"],
+)
 
 
 roomQueues = {}
@@ -121,7 +133,7 @@ async def enter_room(
                 break
             async with broadcast.subscribe(channel=room.code) as subscriber:
                 async for event in subscriber:
-                    yield event.message
+                    yield json.dumps(event.message)
 
     return EventSourceResponse(streamRoomActivity())
 
@@ -204,7 +216,7 @@ async def join_lobby(
 
     async def streamLobbyActivity():
         players = crud.get_room_players(db, room.code)
-        yield ",".join(players)
+        yield json.dumps(",".join(players))
         while True:
             disconnected = await req.is_disconnected()
             if disconnected:
@@ -217,7 +229,7 @@ async def join_lobby(
                     msg = event.message
                     if msg == CLOSE_ROOM_COMMAND:
                         return
-                    yield msg
+                    yield json.dumps(msg)
 
     return EventSourceResponse(streamLobbyActivity())
 
