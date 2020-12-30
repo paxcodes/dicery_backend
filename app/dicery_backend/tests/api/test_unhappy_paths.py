@@ -1,15 +1,13 @@
 from typing import Generator
 
+from dicery_backend import crud, models, schemas
 from pytest import fixture, mark
 from sqlalchemy.orm import Session
-
-from dicery_backend import crud, schemas, models
 from starlette.testclient import TestClient
 
 
 class Test_when_room_is_unavailable:
-    """Tests that when room is marked as closed / "isAvailable" == False,
-    user will not be able to get an access token for it."""
+    """When room is marked as closed / "isAvailable" == False"""
 
     @fixture
     def givenClosedRoom(self, db: Session) -> Generator[models.Room, None, None]:
@@ -22,6 +20,7 @@ class Test_when_room_is_unavailable:
     def test_players_cannot_receive_access_token_for_room(
         self, client: TestClient, givenClosedRoom: models.Room
     ):
+        """User should not be able to get an access token for it."""
         response = client.post(
             "/token", data={"room_code": givenClosedRoom.code, "player": "Sean"}
         )
