@@ -1,5 +1,5 @@
 from dicery_backend import crud, schemas
-from pytest import fixture
+from pytest import fixture, mark
 from sqlalchemy.orm import Session
 
 
@@ -41,3 +41,14 @@ class Test_Room_BREAD:
         def test_there_should_be_no_more_players_in_the_database(self, db: Session):
             actualAllPlayers = crud.get_all_players(db)
             assert actualAllPlayers == []
+
+    class Test_When_a_room_is_deleted_and_other_rooms_exist:
+        @mark.skip(reason="Test not yet created")
+        def test_it_deletes_room_players_of_the_deleted_room(self, db: Session):
+            # TODO
+            pass
+
+        @mark.skip(reason="Test not yet created")
+        def test_players_in_the_other_room_should_still_be_present(self, db: Session):
+            # TODO
+            pass
