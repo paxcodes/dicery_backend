@@ -1,5 +1,12 @@
-from sqlalchemy import Column, ARRAY, ForeignKey
-from sqlalchemy import Integer, DateTime, String, Boolean
+from sqlalchemy import (
+    ARRAY,
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+)
 from sqlalchemy.orm import relationship
 
 from .database import Base
