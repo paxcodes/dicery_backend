@@ -1,6 +1,7 @@
 from typing import List, Tuple
 
 from sqlalchemy.orm import Session
+
 from . import models, schemas
 
 
@@ -55,3 +56,7 @@ def get_room_players(db: Session, room_code: str) -> List[str]:
         models.RoomPlayer.room_code == room_code
     ).all()
     return [row[0] for row in queryResult]
+
+
+def get_all_players(db: Session) -> List[str]:
+    return db.query(models.RoomPlayer).all()
