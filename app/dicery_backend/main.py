@@ -32,9 +32,7 @@ CLOSE_ROOM_COMMAND = "***CLOSE_ROOM***"
 api_key = APIKeyCookie(name=API_KEY_COOKIE_NAME)
 
 broadcast = Broadcast(settings.SQLALCHEMY_DATABASE_URI)
-app = FastAPI(
-    on_startup=[broadcast.connect], on_shutdown=[broadcast.disconnect],
-)
+app = FastAPI(on_startup=[broadcast.connect], on_shutdown=[broadcast.disconnect],)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:8080"],
@@ -114,9 +112,7 @@ async def submit_dice_roll(
 
 @app.get("/rooms/{room_code}")
 async def enter_room(
-    room_code: str,
-    req: Request,
-    playerAndRoom=Depends(get_current_player_and_room),
+    room_code: str, req: Request, playerAndRoom=Depends(get_current_player_and_room),
 ):
     player, room = playerAndRoom
     if room.code != room_code:
@@ -164,9 +160,7 @@ async def close_room_lobby(
 
 @app.post("/rooms", response_model=schemas.Room)
 def create_room(
-    response: Response,
-    room_owner: str = Form(...),
-    db: Session = Depends(get_db),
+    response: Response, room_owner: str = Form(...), db: Session = Depends(get_db),
 ):
     while True:
         room_code = GenerateRoomCode()
@@ -182,9 +176,7 @@ def create_room(
 
     roomSchema = schemas.RoomCreate(code=room_code, owner=room_owner)
     room = crud.create_room(db=db, roomSchema=roomSchema)
-    roomPlayerSchema = schemas.RoomPlayer(
-        room_code=room.code, player=room.owner
-    )
+    roomPlayerSchema = schemas.RoomPlayer(room_code=room.code, player=room.owner)
     crud.add_room_player(
         db, room_player=roomPlayerSchema,
     )
@@ -194,9 +186,7 @@ def create_room(
         data={"sub": room_owner, "dicery_room": room_code},
         expires_delta=access_token_expires,
     )
-    response.set_cookie(
-        key=API_KEY_COOKIE_NAME, value=f"{access_token}", httponly=True
-    )
+    response.set_cookie(key=API_KEY_COOKIE_NAME, value=f"{access_token}", httponly=True)
 
     return room
 
@@ -263,9 +253,7 @@ async def validate_room_for_access_token(
         expires_delta=access_token_expires,
     )
 
-    response.set_cookie(
-        key=API_KEY_COOKIE_NAME, value=f"{access_token}", httponly=True
-    )
+    response.set_cookie(key=API_KEY_COOKIE_NAME, value=f"{access_token}", httponly=True)
 
     room_player_schema = schemas.RoomPlayer(room_code=room_code, player=player)
     crud.add_room_player(db, room_player=room_player_schema)
