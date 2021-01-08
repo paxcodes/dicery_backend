@@ -44,8 +44,6 @@ services:
             context: .
             args:
                 INSTALL_DEV: ${INSTALL_DEV-false}
-        depends_on:
-            - db
         env_file:
             - .env
         environment:
@@ -89,8 +87,6 @@ services:
         networks:
             - ${TRAEFIK_PUBLIC_NETWORK?TRAEFIK_PUBLIC_NETWORK variable not set}
             - default
-        depends_on:
-            - db
         env_file:
             - .env
         deploy:
