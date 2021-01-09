@@ -97,7 +97,8 @@ services:
                 - traefik.http.middlewares.${STACK_NAME?STACK_NAME variable not set}-ipwhitelist.ipwhitelist.sourcerange=${SOURCE_IP?SOURCE_IP variable not set}
                 - traefik.http.routers.${STACK_NAME?STACK_NAME variable not set}-pgadmin-http.rule=Host(`pgadmin.${DOMAIN?DOMAIN variable not set}`)
                 - traefik.http.routers.${STACK_NAME?STACK_NAME variable not set}-pgadmin-http.entrypoints=http
-                - traefik.http.routers.${STACK_NAME?STACK_NAME variable not set}-pgadmin-http.middlewares=${STACK_NAME?STACK_NAME variable not set}-https-redirect
+                - traefik.http.routers.${STACK_NAME?STACK_NAME variable not set}-pgadmin-https.middlewares=${STACK_NAME?STACK_NAME variable not set}-ipwhitelist
+                - traefik.http.routers.${STACK_NAME?STACK_NAME variable not set}-pgadmin-http.middlewares=${STACK_NAME?STACK_NAME variable not set}-ipwhitelist,${STACK_NAME?STACK_NAME variable not set}-https-redirect
                 - traefik.http.routers.${STACK_NAME?STACK_NAME variable not set}-pgadmin-https.rule=Host(`pgadmin.${DOMAIN?DOMAIN variable not set}`)
                 - traefik.http.routers.${STACK_NAME?STACK_NAME variable not set}-pgadmin-https.entrypoints=https
                 - traefik.http.routers.${STACK_NAME?STACK_NAME variable not set}-pgadmin-https.tls=true
