@@ -1,4 +1,4 @@
-version: "3.3"
+version: "3.6"
 services:
 
     proxy:
@@ -37,23 +37,21 @@ services:
                 - traefik.http.middlewares.${STACK_NAME?STACK_NAME variable not set}-www-redirect.redirectregex.replacement=https://${DOMAIN?DOMAIN variable not set}/$${3}
                 - traefik.http.routers.${STACK_NAME?STACK_NAME variable not set}-proxy-https.middlewares=${STACK_NAME?STACK_NAME variable not set}-www-redirect
                 - traefik.http.routers.${STACK_NAME?STACK_NAME variable not set}-proxy-http.middlewares=${STACK_NAME?STACK_NAME variable not set}-www-redirect,${STACK_NAME?STACK_NAME variable not set}-https-redirect
-    
+
     backend:
         image: dicery-backend_backend:latest
-        build: 
+        build:
             context: .
             args:
                 INSTALL_DEV: ${INSTALL_DEV-false}
-        depends_on:
-            - db
-        env_file: 
+        env_file:
             - .env
-        environment: 
+        environment:
             - MODULE_NAME=dicery_backend.main
             - SERVER_NAME=${DOMAIN?DOMAIN variable not set}
             - SERVER_HOST=https://${DOMAIN?DOMAIN variable not set}
         deploy:
-            labels: 
+            labels:
                 - traefik.enable=true
                 - traefik.constraint-label-stack=${TRAEFIK_TAG?TRAEFIK_TAG variable not set}
                 - traefik.http.routers.${STACK_NAME?STACK_NAME variable not set}-backend-http.rule=PathPrefix(`/`)
@@ -89,18 +87,19 @@ services:
         networks:
             - ${TRAEFIK_PUBLIC_NETWORK?TRAEFIK_PUBLIC_NETWORK variable not set}
             - default
-        depends_on:
-            - db
-        env_file: 
+        env_file:
             - .env
         deploy:
             labels:
                 - traefik.enable=true
                 - traefik.docker.network=${TRAEFIK_PUBLIC_NETWORK?TRAEFIK_PUBLIC_NETWORK variable not set}
                 - traefik.constraint-label=${TRAEFIK_PUBLIC_TAG?TRAEFIK_PUBLIC_TAG variable not set}
+                - traefik.http.middlewares.${STACK_NAME?STACK_NAME variable not set}-ipwhitelist.ipwhitelist.sourcerange=${SOURCE_IP?SOURCE_IP variable not set}
+                - traefik.http.middlewares.${STACK_NAME?STACK_NAME variable not set}-ipwhitelist.ipwhitelist.ipstrategy.depth=1
                 - traefik.http.routers.${STACK_NAME?STACK_NAME variable not set}-pgadmin-http.rule=Host(`pgadmin.${DOMAIN?DOMAIN variable not set}`)
                 - traefik.http.routers.${STACK_NAME?STACK_NAME variable not set}-pgadmin-http.entrypoints=http
-                - traefik.http.routers.${STACK_NAME?STACK_NAME variable not set}-pgadmin-http.middlewares=${STACK_NAME?STACK_NAME variable not set}-https-redirect
+                - traefik.http.routers.${STACK_NAME?STACK_NAME variable not set}-pgadmin-https.middlewares=${STACK_NAME?STACK_NAME variable not set}-ipwhitelist
+                - traefik.http.routers.${STACK_NAME?STACK_NAME variable not set}-pgadmin-http.middlewares=${STACK_NAME?STACK_NAME variable not set}-ipwhitelist,${STACK_NAME?STACK_NAME variable not set}-https-redirect
                 - traefik.http.routers.${STACK_NAME?STACK_NAME variable not set}-pgadmin-https.rule=Host(`pgadmin.${DOMAIN?DOMAIN variable not set}`)
                 - traefik.http.routers.${STACK_NAME?STACK_NAME variable not set}-pgadmin-https.entrypoints=https
                 - traefik.http.routers.${STACK_NAME?STACK_NAME variable not set}-pgadmin-https.tls=true
@@ -108,7 +107,7 @@ services:
                 - traefik.http.services.${STACK_NAME?STACK_NAME variable not set}-pgadmin.loadbalancer.server.port=5050
 
 
-volumes: 
+volumes:
     app-db-data:
 
 networks:
