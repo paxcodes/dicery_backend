@@ -111,7 +111,7 @@ async def submit_dice_roll(
 
 
 @app.get("/rooms/{room_code}")
-async def enter_room(
+async def join_room(
     room_code: str, req: Request, playerAndRoom=Depends(get_current_player_and_room),
 ):
     player, room = playerAndRoom
