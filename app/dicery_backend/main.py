@@ -223,6 +223,12 @@ async def join_lobby(
     return EventSourceResponse(streamLobbyActivity())
 
 
+@app.get("/token", response_model=schemas.Room)
+async def validate_token(playerAndRoom=Depends(get_current_player_and_room)):
+    player, room = playerAndRoom
+    return room
+
+
 @app.post("/token", response_model=schemas.Room)
 async def validate_room_for_access_token(
     response: Response,
