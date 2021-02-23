@@ -1,5 +1,6 @@
 import json
 from datetime import datetime, timedelta, timezone
+from typing import Tuple
 
 from broadcaster import Broadcast
 from fastapi import (
@@ -18,7 +19,7 @@ from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 from sse_starlette.sse import EventSourceResponse
 
-from . import crud, schemas
+from . import crud, models, schemas
 from .config import settings
 from .database import SessionLocal
 from .utils import CleanDiceRolls, CreateAccessToken, GenerateRoomCode
@@ -55,7 +56,7 @@ def get_db():
 
 async def get_current_player_and_room(
     token: str = Security(api_key), db=Depends(get_db)
-):
+) -> Tuple[str, models.Room]:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate player and room",
