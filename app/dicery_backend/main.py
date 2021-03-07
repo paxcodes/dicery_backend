@@ -249,9 +249,6 @@ async def validate_room_for_access_token(
     # should return a 400.
     # TODO if player `already exists`, concatenate with `_[NUMBER]`
     # player = f"{player}_{number}"
-    # TODO add player to the database so we can confirm later that the player
-    # can submit/subscribe.
-    # TODO ^^^ Also we need a list of players *already* in the room.
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = CreateAccessToken(
         data={"sub": player, "dicery_room": room_code},
