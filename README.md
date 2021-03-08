@@ -7,6 +7,8 @@ Dicery is a dice-rolling app where a group of friends can roll the dice and have
 - close a room
 - broadcast dice results to users subscribed in a room using Server-Sent Events
 
+A complete flow of the app and what the API receives and responds is under a section in [Personal Anecdotes](#securing-rooms).
+
 ## Running the API locally
 
 1. Install Docker
@@ -18,7 +20,7 @@ Dicery is a dice-rolling app where a group of friends can roll the dice and have
 
 When researching on implementing real-time apps, I learned about Server-Sent Events (SSE) and how it’s a simpler mechanism than web sockets, yet sufficient to provide real-time event broadcasting for my app. Before I implemented SSE in the backend API, I implemented the simplest SSE endpoint that streams numbers. I researched for SSE in Python and found SSE-Starlette—a python package implementing the SSE protocol. I was able to use it, [fixed a bug](https://github.com/sysid/sse-starlette/pull/3) for them, and [helped other FastAPI users](https://github.com/sysid/sse-starlette/issues/2) use the package. This solidified my understanding before finally implementing it in the backend API.
 
-### Securing Rooms
+### <a name="securing-rooms"></a> Securing Rooms
 I had to secure rooms so no one outside the group can spam the room with dice rolls.
 
 I read FastAPI's documentation on authorization where they mentioned OpenAPI's security schemes: API Keys, standard HTTP authentication, and oAuth2. The documentation focused on authorizing given a username and password, which is not relevant to my app that uses a room code.
