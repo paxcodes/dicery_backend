@@ -1,6 +1,6 @@
 # Backend API of Dicery
 
-Dicery is a dice-rolling app where a group of friends can roll the dice and have their dice results broadcasted to everyone else. Basically, the API receives requests to:
+Dicery is a dice-rolling app where a group of friends can roll the dice and have their dice results broadcasted to everyone else. The API receives requests to:
 
 - create a room
 - add members to a room
@@ -19,13 +19,11 @@ Dicery is a dice-rolling app where a group of friends can roll the dice and have
 When researching on implementing real-time apps, I learned about Server-Sent Events (SSE) and how it’s a simpler mechanism than web sockets, yet sufficient to provide real-time event broadcasting for my app. Before I implemented SSE in the backend API, I implemented the simplest SSE endpoint that streams numbers. I researched for SSE in Python and found SSE-Starlette—a python package implementing the SSE protocol. I was able to use it, [fixed a bug](https://github.com/sysid/sse-starlette/pull/3) for them, and [helped other FastAPI users](https://github.com/sysid/sse-starlette/issues/2) use the package. This solidified my understanding before finally implementing it in the backend API.
 
 ### Securing Rooms
-I had is securing rooms so no one outside the group can spam the room with dice rolls.
+I had to secure rooms so no one outside the group can spam the room with dice rolls.
 
 I read FastAPI's documentation on authorization where they mentioned OpenAPI's security schemes: API Keys, standard HTTP authentication, and oAuth2. The documentation focused on authorizing given a username and password, which is not relevant to my app that uses a room code.
 
-The room code consists of 6 alphanumeric characters which can be cracked in under an hour and a table-top role-playing game can easily go for 2-4 hours. I know I shouldn't allow anyone with a valid room code to send POST requests to the API to submit dice rolls.
-
-From the 3 security schemes, an API key of some sort (or something that works similarly) seems to be my best bet. Since the documentation didn’t talk about API keys, I had to dig into FastAPI’s repository to find out how FastAPI supports API keys. After studying how oAuth2 is implemented as written in the documentation and going through FastAPI’s security modules, I was able to come up with an equivalent for my app:
+The room code consists of 6 alphanumeric characters which can be cracked in under an hour and a table-top role-playing game can easily go for 2-4 hours. I know I shouldn't allow anyone with a valid room code to send POST requests to the API to submit dice rolls. From the 3 security schemes, an API key of some sort (or something that works similarly) seems to be my best bet. Since the documentation didn’t talk about API keys, I had to dig into FastAPI’s repository to find out how FastAPI supports API keys. After studying how oAuth2 is implemented as written in the documentation and going through FastAPI’s security modules, I was able to come up with an equivalent for my app:
 
 1. A user (the owner) creates a room and is given the room code.
  - The API receives a POST request which adds the room and the player to the database. A signed JWT containing the username and room code is created. The response will send back an HTTP-Only cookie containing the signed JWT.
@@ -48,4 +46,3 @@ The token expires after 1 day. I’ve read that JWT is best used short-term (as 
 ### In the Wild
 
 Although the solution may not be ideal, my husband and his friends were able to use it for a couple of game sessions until it was no longer necessary since they moved from Google Hangouts to Discord where they can install a dice-rolling bot. Check it out at https://stag.dicery.margret.pw/
-
