@@ -9,7 +9,7 @@ Dicery is a dice-rolling app where a group of friends can roll the dice and have
 
 ## Running the API locally
 
-1. Install docker
+1. Install Docker
 2. Run `docker-compose up`
 
 # Backend API of Dicery
