@@ -25,7 +25,7 @@ I had to secure rooms so no one outside the group can spam the room with dice ro
 
 I read FastAPI's documentation on authorization where they mentioned OpenAPI's security schemes: API Keys, standard HTTP authentication, and oAuth2. The documentation focused on authorizing given a username and password, which is not relevant to my app that uses a room code.
 
-The room code consists of 6 alphanumeric characters which can be cracked in under an hour and a table-top role-playing game can easily go for 2-4 hours. I know I shouldn't allow anyone with a valid room code to send POST requests to the API to submit dice rolls. From the 3 security schemes, an API key of some sort (or something that works similarly) seems to be my best bet. Since the documentation didn’t talk about API keys, I had to dig into FastAPI’s repository to find out how FastAPI supports API keys. After studying how oAuth2 is implemented as written in the documentation and going through FastAPI’s security modules, I was able to come up with an equivalent for my app:
+The room code only consists of 5 alphanumeric characters and a table-top role-playing game can easily go for 2-4 hours. Allowing anyone with a valid room code to successfully send POST requests to the API and submit dice rolls is not a good idea. From the 3 security schemes, an API key of some sort (or something that works similarly) seems to be my best bet. Since the documentation didn’t talk about API keys, I had to dig into FastAPI’s repository to find out how FastAPI supports API keys. After studying how oAuth2 is implemented as written in the documentation and going through FastAPI’s security modules, I was able to come up with an equivalent for my app:
 
 1. A user (the owner) creates a room and is given the room code.
  - The API receives a POST request which adds the room and the player to the database. A signed JWT containing the username and room code is created. The response will send back an HTTP-Only cookie containing the signed JWT.
@@ -47,4 +47,4 @@ The token expires after 1 day. I’ve read that JWT is best used short-term (as 
 
 ### In the Wild
 
-Although the solution may not be ideal, my husband and his friends were able to use it for a couple of game sessions until it was no longer necessary since they moved from Google Hangouts to Discord where they can install a dice-rolling bot. Check it out at https://stag.dicery.margret.pw/
+My husband and his friends were able to use it for a couple of game sessions until it was no longer necessary since they moved from Google Hangouts to Discord where they can install a dice-rolling bot. Check it out at https://stag.dicery.margret.pw/
