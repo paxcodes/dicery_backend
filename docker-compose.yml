@@ -45,7 +45,7 @@ services:
             args:
                 INSTALL_DEV: ${INSTALL_DEV-false}
         env_file:
-            - .env
+            - .env.production
         environment:
             - MODULE_NAME=dicery_backend.main
             - SERVER_NAME=${DOMAIN?DOMAIN variable not set}
@@ -62,7 +62,7 @@ services:
         volumes:
             - app-db-data:/var/lib/postgresql/data/pgdata
         env_file:
-            - .env
+            - .env.production
         environment:
             - PGDATA=/var/lib/postgresql/data/pgdata
         command:
@@ -88,7 +88,7 @@ services:
             - ${TRAEFIK_PUBLIC_NETWORK?TRAEFIK_PUBLIC_NETWORK variable not set}
             - default
         env_file:
-            - .env
+            - .env.production
         deploy:
             labels:
                 - traefik.enable=true
