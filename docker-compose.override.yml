@@ -34,6 +34,8 @@ services:
             context: .
             args:
                 INSTALL_DEV: ${INSTALL_DEV-true}
+        env_file:
+            - .env
         command: /start-reload.sh
         labels:
             - traefik.enable=true
