@@ -52,9 +52,11 @@ def add_room_player(db: Session, room_player: schemas.RoomPlayer):
 
 
 def get_room_players(db: Session, room_code: str) -> List[str]:
-    queryResult: List[Tuple[str]] = db.query(models.RoomPlayer.player).filter(
-        models.RoomPlayer.room_code == room_code
-    ).all()
+    queryResult: List[Tuple[str]] = (
+        db.query(models.RoomPlayer.player)
+        .filter(models.RoomPlayer.room_code == room_code)
+        .all()
+    )
     return [row[0] for row in queryResult]
 
 
