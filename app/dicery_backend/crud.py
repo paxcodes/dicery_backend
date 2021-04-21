@@ -59,4 +59,5 @@ def get_room_players(db: Session, room_code: str) -> List[str]:
 
 
 def get_all_players(db: Session) -> List[str]:
-    return db.query(models.RoomPlayer).all()
+    queryResult: List[models.RoomPlayer] = db.query(models.RoomPlayer).all()
+    return [row.player for row in queryResult]
