@@ -22,6 +22,10 @@ services:
         ports:
             - "5050:5050"
 
+    db:
+        env_file:
+            - .env
+
     backend:
         ports:
             - "8888:8888"
