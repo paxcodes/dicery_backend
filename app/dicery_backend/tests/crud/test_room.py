@@ -22,7 +22,7 @@ class Test_Room_BREAD:
         # Then
         assert not givenRoom.isAvailable
 
-    class Test_When_the_only_room_is_deleted:
+    class Test_When_the_last_room_is_deleted:
         @fixture(scope="class")
         def givenRoom(self, db: Session):
             givenRoomCode, givenOwner = "ABCDE4", "Pax"
