@@ -21,6 +21,8 @@ services:
     pgadmin:
         ports:
             - "5050:5050"
+        env_file:
+            - .env
 
     db:
         env_file:
