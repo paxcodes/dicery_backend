@@ -469,7 +469,7 @@ checkqa-mypy = ["mypy (v0.761)"]
 testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "requests", "xmlschema"]
 
 [[package]]
-category = "main"
+category = "dev"
 description = "Library pytest-spec is a pytest plugin to display test execution output like a SPECIFICATION."
 name = "pytest-spec"
 optional = false
@@ -738,7 +738,7 @@ python-versions = ">=3.6.1"
 version = "8.1"
 
 [metadata]
-content-hash = "3d2c97a7a8ab68380d061f1ad36bb0df273b30e9c21389a9a10fec1a3a0ac61d"
+content-hash = "c7cbd3539333f80379ddd623c5fae7576db5d92c749fc6bcf55f17b7ba449981"
 python-versions = "^3.8"
 
 [metadata.files]
