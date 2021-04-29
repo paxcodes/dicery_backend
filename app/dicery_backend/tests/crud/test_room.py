@@ -4,23 +4,24 @@ from sqlalchemy.orm import Session
 
 
 class Test_Room_BREAD:
-    @fixture(scope="class")
-    def givenRoom(self, db: Session):
-        givenRoomCode, givenOwner = "ABCDE3", "Pax"
-        roomSchema = schemas.RoomCreate(code=givenRoomCode, owner=givenOwner)
-        # TODO creating a room should automatically create a room player
-        room = crud.create_room(db, roomSchema=roomSchema)
-        roomPlayer = schemas.RoomPlayer(room_code=givenRoomCode, player=givenOwner)
-        crud.add_room_player(db, roomPlayer)
-        yield room
-        crud.delete_room(db, room_code=givenRoomCode)
+    class Test_Given_an_Existing_Room:
+        @fixture(scope="class")
+        def givenRoom(self, db: Session):
+            givenRoomCode, givenOwner = "ABCDE3", "Pax"
+            roomSchema = schemas.RoomCreate(code=givenRoomCode, owner=givenOwner)
+            # TODO creating a room should automatically create a room player
+            room = crud.create_room(db, roomSchema=roomSchema)
+            roomPlayer = schemas.RoomPlayer(room_code=givenRoomCode, player=givenOwner)
+            crud.add_room_player(db, roomPlayer)
+            yield room
+            crud.delete_room(db, room_code=givenRoomCode)
 
-    def test_it_can_close_the_room(self, db: Session, givenRoom):
-        # When
-        crud.close_room(db, givenRoom.code)
-        db.refresh(givenRoom)
-        # Then
-        assert not givenRoom.isAvailable
+        def test_users_can_close_the_room(self, db: Session, givenRoom):
+            # When
+            crud.close_room(db, givenRoom.code)
+            db.refresh(givenRoom)
+            # Then
+            assert not givenRoom.isAvailable
 
     class Test_When_the_last_room_is_deleted:
         @fixture(scope="class")
