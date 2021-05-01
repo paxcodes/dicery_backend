@@ -56,6 +56,7 @@ services:
                 - traefik.constraint-label-stack=${TRAEFIK_TAG?TRAEFIK_TAG variable not set}
                 - traefik.http.routers.${STACK_NAME?STACK_NAME variable not set}-backend-http.rule=PathPrefix(`/`)
                 - traefik.http.services.${STACK_NAME?STACK_NAME variable not set}-backend.loadbalancer.server.port=80
+                - traefik.http.middlewares.${STACK_NAME?STACK_NAME variable not set}-backend.ratelimit.average=3
 
     db:
         image: postgres:12
@@ -105,6 +106,7 @@ services:
                 - traefik.http.routers.${STACK_NAME?STACK_NAME variable not set}-pgadmin-https.tls=true
                 - traefik.http.routers.${STACK_NAME?STACK_NAME variable not set}-pgadmin-https.tls.certresolver=le
                 - traefik.http.services.${STACK_NAME?STACK_NAME variable not set}-pgadmin.loadbalancer.server.port=5050
+                - traefik.http.middlewares.${STACK_NAME?STACK_NAME variable not set}-pgadmin.ratelimit.average=100
 
 
 volumes:
