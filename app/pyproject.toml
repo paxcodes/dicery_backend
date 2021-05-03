@@ -2,7 +2,7 @@
 name = "dicery_backend"
 version = "0.1.0"
 description = ""
-authors = ["Margret 'Pax' Williams <pax.margret@gmail.com>"]
+authors = ["Margret 'Pax' Williams <pax.margret@tutanota.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
